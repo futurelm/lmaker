@@ -1,0 +1,15 @@
+{{- $basePackage := index .Extra 0 -}}
+package main
+
+import (
+    "os"
+
+  app "{{ $basePackage }}/{{.ProjectName}}/cmd"
+)
+
+func main() {
+	cmd:=app.New{{ firstUpperCase  .ProjectName}}Command()
+	if err:=cmd.Execute(); err != nil {
+	    os.Exit(1)
+	}
+}

@@ -1,0 +1,75 @@
+syntax = "proto3";
+package lmakerfirst;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+service TodoList {
+    rpc AddTodo(AddTodoRequest) returns (AddTodoResponse) {
+        option (google.api.http) = {
+            post: "/addTodo"
+            body: "*"
+        };
+    }
+    rpc ListTodos(google.protobuf.Empty) returns (ListTodosResponse) {
+        option (google.api.http) = {
+            get: "/listTodos"
+        };
+        option idempotency_level = NO_SIDE_EFFECTS;
+    }
+
+		rpc CompleteTodo(CompleteTodoRequest) returns (google.protobuf.Empty) {
+		    option (google.api.http) = {
+		        post: "/completeTodo"
+		        body: "*"
+		    };
+		}
+}
+
+message Todo {
+    int64 id = 1;
+    string author = 2;
+    string description = 3;
+    bool done = 4;
+    string created_at = 5;
+}
+
+message AddTodoRequest {
+    string author = 1;
+    string description = 2;
+}
+
+message AddTodoResponse {
+    Todo todo = 1;
+}
+
+message ListTodosResponse {
+    repeated Todo todos = 1;
+}
+
+message CompleteTodoRequest {
+  int64 id = 1;
+}
+
+
+message TestStructRequest {
+  google.protobuf.Struct SomeStruct = 1;
+}
+
+service Greeter {
+  rpc Hello(HelloRequest) returns (HelloResponse) {
+    option (google.api.http) = {
+      post: "/hello"
+      body: "*"
+    };
+  }
+}
+
+message HelloRequest {
+  string Name = 1 ;
+}
+
+message HelloResponse {
+  string Message = 1;
+}

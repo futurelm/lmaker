@@ -1,0 +1,20 @@
+{{- $basePackage := index .Extra 0 -}}
+{{- $project := .ProjectName -}}
+package services
+
+import (
+    "context"
+    "{{ $basePackage }}/pb"
+)
+
+type {{ firstUpperCase $project}}Service interface {
+     {{- range $serviceIndex, $service := .File.Service }}
+         {{- range $index, $method := $service.Method }}
+     // {{ $method.Name}}...
+     {{ $method.Name}}(ctx context.Context{{- range $index,$filed := $method.Params -}}
+            , {{$filed.Name}} {{$filed.Type}}
+      {{- end -}}) ( {{- range $index,$filed := $method.Results -}}{{$filed.Name}} {{$filed.Type}},
+                       {{- end }} err error)
+         {{- end }}
+     {{- end }}
+}

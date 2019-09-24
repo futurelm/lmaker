@@ -1,0 +1,77 @@
+{{- $basePackage := index .Extra 0 -}}
+{{- $project := .ProjectName -}}
+
+package services
+import (
+	"context"
+	"github.com/gin-gonic/gin"
+	"github.com/lmfuture-ma/lmaker/transprot"
+	"net/http"
+
+	"{{ $basePackage }}/pb"
+)
+
+type Handler struct {
+    {{- range $serviceIndex, $service := .File.Service }}
+          {{- range $index, $method := $service.Method }}
+     {{ $method.Name}}  transprot.HttpHandler
+          {{- end }}
+    {{- end }}
+}
+
+func MakeHandler(service {{ firstUpperCase $project}}Service,e *gin.Engine) *gin.Engine {
+	handlers := registerHandler(service)
+	   {{- range $serviceIndex, $service := .File.Service }}
+              {{- range $index, $method := $service.Method -}}
+                {{- range $routeIndex, $route := $method.HTTPRoutes }}
+    e.Handle({{ $route.HTTPMethod }},"{{ $route.Path }}",transprot.NewHttpServer(Decode{{$method.Name}}Req,handlers.{{ $method.Name}}).Server)
+                {{- end }}
+              {{- end -}}
+        {{- end }}
+	return e
+}
+
+func registerHandler(s {{ firstUpperCase $project}}Service) Handler {
+	var handler Handler
+	   {{- range $serviceIndex, $service := .File.Service }}
+              {{- range $index, $method := $service.Method }}
+    handler.{{$method.Name}} = Make{{$method.Name}}Endpoint(s)
+              {{- end }}
+        {{- end }}
+	return handler
+}
+
+{{- range $serviceIndex, $service := .File.Service -}}
+     {{- range $index, $method := $service.Method }}
+func Make{{$method.Name}}Endpoint(s {{ firstUpperCase $project}}Service) transprot.HttpHandler{
+	return func(ctx context.Context, structReq interface{}) (interface{}, error ) {
+        {{- if eq $method.InputType  "" }}
+        {{ range $j,$result := $method.Results -}} {{$result.Name}}, {{- end }}err := s.{{$method.Name}}(ctx)
+         {{- else }}
+        req := structReq.(*{{$method.InputType}})
+        {{ range $j,$result := $method.Results -}} {{$result.Name}}, {{- end -}}err := s.{{$method.Name}}(ctx
+        {{- range $i,$param := $method.Params -}}, req.{{ firstUpperCase $param.Name}} {{- end -}})
+        {{- end }}
+		var rs *{{$method.OutputType}}
+		if err != nil {
+			rs = &{{$method.OutputType}}{}
+		}else {
+			rs = &{{$method.OutputType}}{ {{- range $j,$result := $method.Results -}}{{firstUpperCase $result.Name}}: {{  $result.Name}}, {{- end -}} }
+		}
+		return rs, err
+	}
+}
+
+func Decode{{$method.Name}}Req(c *gin.Context) (interface{},error) {
+  {{- if eq $method.InputType  "" }}
+     return nil, nil
+   {{ else }}
+     req := new({{$method.InputType}})
+     if err:=c.Bind(req); err != nil {
+     	return nil, err
+     }
+     return req, nil
+   {{ end }}
+}
+      {{- end }}
+{{- end }}

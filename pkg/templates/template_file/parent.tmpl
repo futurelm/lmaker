@@ -1,0 +1,5 @@
+{{- $basePackage := index .Extra 0 -}}
+{{- $projectName := .ProjectName -}}
+{{- $serviceName := .ServiceName -}}
+
+{{ template "receive" .}}

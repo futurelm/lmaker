@@ -1,0 +1,31 @@
+{{- $basePackage := index .Extra 0 -}}
+package server
+
+import (
+    "context"
+    "{{$basePackage}}/pb"
+)
+	/*
+
+
+     {{ range $serviceIndex, $service := .File.Service }}
+         {{- range $index, $method := $service.Method }}
+// {{ $method.Name}}...
+func  {{ loweCase $method.Name}}(ctx context.Context{{- range $index,$filed := $method.Params -}}
+            , {{$filed.Name}} {{$filed.Type}}
+      {{- end -}}) ( {{- range $index,$filed := $method.Results -}}{{$filed.Name}} {{$filed.Type}},
+                       {{- end }} err error) {
+       return nil,nil
+}
+         {{- end }}
+     {{- end }}
+	*/
+
+// ListTodos...
+func  listtodos(ctx context.Context) (todos []*pb.Todo, err error) {
+       return []*pb.Todo{ {Author:"kobe"},{Author:"james"}},nil
+}
+// GetTodo...
+func  gettodo(ctx context.Context, int int64) (todo *pb.Todo, err error) {
+       return &pb.Todo{Id:int,Done:true},nil
+}
