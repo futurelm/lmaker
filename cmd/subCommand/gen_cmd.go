@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/lmfuture-ma/lmaker/model"
-	"github.com/lmfuture-ma/lmaker/pkg"
 	"github.com/lmfuture-ma/lmaker/pkg/builder"
 	"github.com/lmfuture-ma/lmaker/pkg/log"
+	"github.com/lmfuture-ma/lmaker/pkg/protoc"
 	"github.com/lmfuture-ma/lmaker/pkg/utils"
 	"github.com/spf13/cobra"
 	"os"
@@ -47,7 +47,7 @@ func GetGen() *cobra.Command {
 }
 
 func (g *genCommand) Run() error {
-	files, err := pkg.FindProtoFile(g.filePackage)
+	files, err := protoc.FindProtoFile(g.filePackage)
 	if err != nil {
 		return err
 	}
@@ -63,11 +63,11 @@ func (g *genCommand) Run() error {
 
 func (g *genCommand) protoc(path string) error {
 	//pb.go
-	err := pkg.ParseProtoToFile(path, pkg.IncludePath)
+	err := protoc.ParseProtoToFile(path, protoc.IncludePath)
 	if err != nil {
 		return err
 	}
-	descriptorSet, err := pkg.ParseProto(path, pkg.IncludePath)
+	descriptorSet, err := protoc.ParseProto(path, protoc.IncludePath)
 	if err != nil {
 		return err
 	}
@@ -90,10 +90,11 @@ func (g *genCommand) generateFile(descriptorSet *descriptor.FileDescriptorSet, e
 	log.RowMsg(fmt.Sprintf("%+v", bd))
 	utils.HandleErr(build.Build(&bd, "/services/handler.tmpl", "/services/z_handler.go"), errArr)
 	utils.HandleErr(build.Build(&bd, "/services/services.tmpl", "/services/z_service.go"), errArr)
+	utils.HandleErr(build.Build(&bd, "/dto/dto.tmpl", "/dto/z_dto.go"), errArr)
+
 	if g.fromCreate {
 		utils.HandleErr(build.Build(&bd, "/server/server.tmpl", "/server/z_server.go"), errArr)
 		utils.HandleErr(build.Build(&bd, "/server/endpoint.tmpl", "/server/endpoint.go"), errArr)
-
 	}
 
 }

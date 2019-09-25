@@ -122,7 +122,7 @@ func (cc *createCMD) mkDir(flag *[]error) {
 
 func (cc *createCMD) mkFile(flag *[]error) {
 	//cp example.proto
-	utils.HandleErr(copyExampleProto(examplePB, filepath.Join(cc.filePackage, cc.Config.ProjectName, "pb/todolist.proto")), flag)
+	utils.HandleErr(copyExampleProto(examplePB, filepath.Join(cc.filePackage, cc.Config.ProjectName, fmt.Sprintf("pb/%s.proto", cc.Config.ProjectName))), flag)
 	bd := cc.baseBuildData()
 	var build = builder.NewBuilder(cc.templatePath, filepath.Join(cc.filePackage, cc.Config.ProjectName))
 	utils.HandleErr(build.Build(&bd, "main.tmpl", "main.go"), flag)

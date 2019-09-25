@@ -1,2 +1,10 @@
 {{- $JSONOmitEmpty := .JSONOmitEmpty }}
+package dto
 
+
+
+type UpdateCartRequest struct {
+	UserID      string `json:"userID"`
+	Destination *Place `json:"destination"`
+	Cart        *Cart  `json:"cart"`
+}

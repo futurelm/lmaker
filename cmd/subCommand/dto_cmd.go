@@ -3,8 +3,8 @@ package subCommand
 import (
 	"fmt"
 	"github.com/lmfuture-ma/lmaker/model"
-	"github.com/lmfuture-ma/lmaker/pkg"
 	"github.com/lmfuture-ma/lmaker/pkg/log"
+	"github.com/lmfuture-ma/lmaker/pkg/protoc"
 	"github.com/spf13/cobra"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
@@ -40,7 +40,7 @@ func delQuestion(c *DtoCommand, key string) kingpin.Action {
 func (dc *DtoCommand) Run() error {
 	//获取proto file
 	curPath, _ := os.Getwd()
-	files, err := pkg.FindProtoFile(curPath)
+	files, err := protoc.FindProtoFile(curPath)
 	if err != nil {
 		log.RowMsg(err)
 		return err
@@ -48,7 +48,7 @@ func (dc *DtoCommand) Run() error {
 
 	//解析proto
 	//todo includePath variable
-	protoObj, err := pkg.ParseProto(files[0], pkg.IncludePath)
+	protoObj, err := protoc.ParseProto(files[0], protoc.IncludePath)
 	if err != nil {
 		log.RowMsg(err)
 		return err
