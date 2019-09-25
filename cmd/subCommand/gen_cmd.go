@@ -37,7 +37,7 @@ func GetGen() *cobra.Command {
 		Long:  `gen-long`,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Do Stuff Here
-			if err := dtoCommand.Run(); err != nil {
+			if err := genCMD.Run(); err != nil {
 				log.RowMsg(err)
 			}
 		},

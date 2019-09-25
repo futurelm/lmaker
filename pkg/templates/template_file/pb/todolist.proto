@@ -22,7 +22,21 @@ get: "/getTodo"
 option idempotency_level = NO_SIDE_EFFECTS;
 }
 
+rpc AddTodo(AddTodoReq) returns (AddTodoResp) {
+option (google.api.http) = {
+post: "/addTodo"
+};
 }
+
+}
+message AddTodoResp {
+   Todo todo = 1;
+}
+
+message AddTodoReq {
+   Todo todo = 1;
+}
+
 
 message GetTodoResp {
 Todo todo = 1;

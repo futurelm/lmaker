@@ -29,6 +29,9 @@ func ParseProto(protoFiles string, includePath []string) (*descriptor.FileDescri
 		if err := tmpFile.Close(); err != nil {
 			log.RowMsg(err)
 		}
+		if err:=os.Remove(tmpFile.Name()); err != nil {
+			log.RowMsg(err)
+		}
 	}()
 	//构造protoc 命令
 	args := []string{}
