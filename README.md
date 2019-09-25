@@ -8,7 +8,7 @@ go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
 go get -u github.com/golang/protobuf/protoc-gen-go
 ```
-##使用
+## 使用
 ```$xslt
 git clone https://github.com/lmfuture-ma/lmaker.git
 cd lmaker 
@@ -17,7 +17,7 @@ go install
 // todolist 为项目名，切换到你的gopath下
 lmaker create -name=todolist   
 ```
-##API扩展
+## API扩展
 
 ```$xslt
 cd todolist
