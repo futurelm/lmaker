@@ -1,10 +1,9 @@
-{{- $JSONOmitEmpty := .JSONOmitEmpty }}
 package dto
 
-
-
-type UpdateCartRequest struct {
-	UserID      string `json:"userID"`
-	Destination *Place `json:"destination"`
-	Cart        *Cart  `json:"cart"`
+{{- range $index,$message := .File.Message }}
+type {{ $message.Name}} struct {
+ {{- range $i,$field := $message.Fields}}
+   {{$field.Name}} {{$field.Type}} `json:"{{$field.JsonTag}}"`
+ {{- end }}
 }
+{{- end }}

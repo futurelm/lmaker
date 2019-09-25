@@ -3,7 +3,7 @@ package server
 
 import (
     "context"
-    "{{$basePackage}}/pb"
+    "{{$basePackage}}/dto"
 )
 	/*
 
@@ -22,10 +22,10 @@ func  {{ loweCase $method.Name}}(ctx context.Context{{- range $index,$filed := $
 	*/
 
 // ListTodos...
-func  listtodos(ctx context.Context) (todos []*pb.Todo, err error) {
-       return []*pb.Todo{ {Author:"kobe"},{Author:"james"}},nil
+func  listtodos(ctx context.Context) (todos []*dto.Todo, err error) {
+       return []*dto.Todo{ {Author:"kobe"},{Author:"james"}},nil
 }
 // GetTodo...
-func  gettodo(ctx context.Context, int int64) (todo *pb.Todo, err error) {
-       return &pb.Todo{Id:int,Done:true},nil
+func  gettodo(ctx context.Context, int int64) (todo *dto.Todo, err error) {
+       return &dto.Todo{Id:int,Done:true},nil
 }

@@ -87,13 +87,12 @@ func (g *genCommand) generateFile(descriptorSet *descriptor.FileDescriptorSet, e
 		*errArr = append(*errArr, err)
 		return
 	}
-	log.RowMsg(fmt.Sprintf("%+v", bd))
 	utils.HandleErr(build.Build(&bd, "/services/handler.tmpl", "/services/z_handler.go"), errArr)
 	utils.HandleErr(build.Build(&bd, "/services/services.tmpl", "/services/z_service.go"), errArr)
 	utils.HandleErr(build.Build(&bd, "/dto/dto.tmpl", "/dto/z_dto.go"), errArr)
+	utils.HandleErr(build.Build(&bd, "/server/server.tmpl", "/server/z_server.go"), errArr)
 
 	if g.fromCreate {
-		utils.HandleErr(build.Build(&bd, "/server/server.tmpl", "/server/z_server.go"), errArr)
 		utils.HandleErr(build.Build(&bd, "/server/endpoint.tmpl", "/server/endpoint.go"), errArr)
 	}
 

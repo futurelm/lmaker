@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"github.com/lmfuture-ma/lmaker/pkg/log"
 	"google.golang.org/genproto/googleapis/api/annotations"
 	"strings"
 )
@@ -17,11 +16,11 @@ func FormatInput(s string) string {
 	if oneWord == "Empty" {
 		return ""
 	}
-	return fmt.Sprintf("pb.%s", oneWord)
+	return fmt.Sprintf("dto.%s", oneWord)
 }
 
-func ReadFiled(s string, msgMap map[string]*descriptor.DescriptorProto) []MethodField {
-	var rs = []MethodField{}
+func ReadMethodFiled(s string, msgMap map[string]*descriptor.DescriptorProto) []Field {
+	var rs = []Field{}
 	// s = ".todolistpb.GetTodoReq"
 	var desc *descriptor.DescriptorProto
 	desc, ok := msgMap[getTypeFromProtoTypeName(s)]
@@ -29,9 +28,19 @@ func ReadFiled(s string, msgMap map[string]*descriptor.DescriptorProto) []Method
 		return rs
 	}
 	for _, filed := range desc.GetField() {
-		rs = append(rs, MethodField{filed.GetName(), goType(filed)})
+		rs = append(rs, Field{filed.GetName(), goType(filed, true), filed.GetJsonName()})
 	}
 	return rs
+}
+
+func ReadMessage(msg *descriptor.DescriptorProto) Message {
+	var m = Message{Name: strings.Title(msg.GetName())}
+	var fields = []Field{}
+	for _, f := range msg.Field {
+		fields = append(fields, Field{Name: strings.Title(f.GetName()), Type: goType(f, false), JsonTag: f.GetJsonName()})
+	}
+	m.Fields = fields
+	return m
 }
 
 func GetHttpRoute(method *descriptor.MethodDescriptorProto) []HTTPRoute {
@@ -72,7 +81,7 @@ func getTypeFromProtoTypeName(s string) string {
 // todo move these method to ./protoc
 
 // goType returns a string representing the type name
-func goType(field *descriptor.FieldDescriptorProto) (typ string) {
+func goType(field *descriptor.FieldDescriptorProto, prefix bool) (typ string) {
 
 	switch *field.Type {
 	case descriptor.FieldDescriptorProto_TYPE_DOUBLE:
@@ -104,7 +113,10 @@ func goType(field *descriptor.FieldDescriptorProto) (typ string) {
 		case ".google.protobuf.Any":
 			typ = "*any.Any"
 		default:
-			typ = fmt.Sprintf("*pb.%s", getTypeFromProtoTypeName(field.GetTypeName()))
+			typ = fmt.Sprintf("*%s", getTypeFromProtoTypeName(field.GetTypeName()))
+			if prefix {
+				typ = fmt.Sprintf("*dto.%s", getTypeFromProtoTypeName(field.GetTypeName()))
+			}
 		}
 	case descriptor.FieldDescriptorProto_TYPE_ENUM:
 		typ = "unknown"
@@ -120,12 +132,9 @@ func goType(field *descriptor.FieldDescriptorProto) (typ string) {
 		typ = "int64"
 	default:
 	}
-
 	if isRepeated(field) {
 		typ = "[]" + typ
 	}
-	log.RowMsg(fmt.Sprintf("before %v type %s", field, typ))
-
 	return
 }
 

@@ -34,6 +34,7 @@ func GetCreate() *cobra.Command {
 		Long:  `create-long`,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Do Stuff Here
+			printLog()
 			if err := createCommand.Run(); err != nil {
 				log.RowMsg(err)
 			}
@@ -52,25 +53,29 @@ func (cc *createCMD) Run() error {
 	if len(cc.Config.ProjectName) == 0 {
 		return fmt.Errorf("projectName is nil")
 	}
+	fmt.Print("==========")
 	formatName(cc)
 	errArr := []error{}
 	makeBaseProject(cc, &errArr)
+	fmt.Print("==========")
 
 	makeProtoFile(cc, &errArr)
+	fmt.Print("==========")
 
 	if len(errArr) > 0 {
 		//删除当前目录
+		log.RowMsg(fmt.Sprintf("%v，删除目录", errArr))
 		err := os.RemoveAll(cc.Config.ProjectName)
 		if err != nil {
 			log.RowMsg("请手动删除")
 		}
 	}
+	fmt.Println("==========(100%)")
 	return nil
 }
 
 func makeProtoFile(cc *createCMD, err *[]error) {
 	chdir(filepath.Join(cc.filePackage, cc.Config.ProjectName))
-	log.RowMsg(genCMD.filePackage)
 	utils.HandleErr(genCMD.Run(), err)
 }
 
@@ -111,6 +116,7 @@ func (cc *createCMD) mkDir(flag *[]error) {
 	utils.HandleErr(os.Mkdir(filepath.Join(cc.Config.ProjectName, "cmd"), 0755), flag)
 	utils.HandleErr(os.Mkdir(filepath.Join(cc.Config.ProjectName, "cmd", "app"), 0755), flag)
 	utils.HandleErr(os.Mkdir(filepath.Join(cc.Config.ProjectName, "cmd", "conf"), 0755), flag)
+	utils.HandleErr(os.Mkdir(filepath.Join(cc.Config.ProjectName, "dto"), 0755), flag)
 	utils.HandleErr(os.Mkdir(filepath.Join(cc.Config.ProjectName, "server"), 0755), flag)
 	utils.HandleErr(os.Mkdir(filepath.Join(cc.Config.ProjectName, "server", "config"), 0755), flag)
 	utils.HandleErr(os.Mkdir(filepath.Join(cc.Config.ProjectName, "services"), 0755), flag)
@@ -125,7 +131,7 @@ func (cc *createCMD) mkFile(flag *[]error) {
 	utils.HandleErr(copyExampleProto(examplePB, filepath.Join(cc.filePackage, cc.Config.ProjectName, fmt.Sprintf("pb/%s.proto", cc.Config.ProjectName))), flag)
 	bd := cc.baseBuildData()
 	var build = builder.NewBuilder(cc.templatePath, filepath.Join(cc.filePackage, cc.Config.ProjectName))
-	utils.HandleErr(build.Build(&bd, "main.tmpl", "main.go"), flag)
+	utils.HandleErr(build.Build(&bd, "main.tmpl", fmt.Sprintf("%s.go", cc.Config.ProjectName)), flag)
 	utils.HandleErr(build.Build(&bd, "/app/server.tmpl", "/cmd/server.go"), flag)
 
 }

@@ -16,7 +16,7 @@ func ParseTemplate(buff *bytes.Buffer, templatePath string, data interface{}) er
 	}
 	err := tmpl.Execute(buff, data)
 	if err != nil {
-		log.RowMsg("tmpl Execute  err ")
+		log.RowMsg("tmpl Execute err:%v ", err)
 		return err
 	}
 	return nil

@@ -6,33 +6,40 @@ import (
 )
 
 type File struct {
-	Import  []string
-	Name    string
-	Service []Service
+	Import  []string  `json:"import"`
+	Name    string    `json:"name"`
+	Service []Service `json:"services"`
+	Message []Message `json:"messages"`
 }
 
 type Service struct {
-	Name   string
-	Method []Method
+	Name   string   `json:"name"`
+	Method []Method `json:"methods"`
 }
 
 type Method struct {
-	Name       string
-	Params     []MethodField
-	Results    []MethodField
-	HTTPRoutes []HTTPRoute
-	InputType  string
-	OutputType string
+	Name       string      `json:"name"`
+	Params     []Field     `json:"params"`
+	Results    []Field     `json:"result"`
+	HTTPRoutes []HTTPRoute `json:"http_routes"`
+	InputType  string      `json:"input_type"`
+	OutputType string      `json:"out_type"`
 }
 
-type MethodField struct {
-	Name string
-	Type string
+type Message struct {
+	Name   string  `json:"name"`
+	Fields []Field `json:"fields"`
+}
+
+type Field struct {
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	JsonTag string `json:"json_tag"`
 }
 
 type HTTPRoute struct {
-	Path       string
-	HTTPMethod string
+	Path       string `json:"path"`
+	HTTPMethod string `json:"http_method"`
 }
 
 func NewHttpRoute(p, method string) HTTPRoute {
