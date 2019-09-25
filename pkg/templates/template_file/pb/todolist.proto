@@ -30,11 +30,11 @@ post: "/addTodo"
 
 }
 message AddTodoResp {
-   Todo todo = 1;
+   Todo todoReq = 1;
 }
 
 message AddTodoReq {
-   Todo todo = 1;
+   Todo todoResp = 1;
 }
 
 
