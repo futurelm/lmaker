@@ -19,8 +19,8 @@ type {{$project}}ServiceImpl struct {}
 // {{ $method.Name}}...
 func  (s *{{$project}}ServiceImpl) {{ $method.Name}}(ctx context.Context{{- range $index,$filed := $method.Params -}}
             , {{$filed.Name}} {{$filed.Type}}
-      {{- end -}}) ( {{- range $index,$filed := $method.Results -}}{{$filed.Name}} {{$filed.Type}},
-                       {{- end }} err error) {
+      {{- end -}}) ( {{- range $index,$filed := $method.Results -}} {{$filed.Type}},
+                       {{- end }} error) {
        return {{ loweCase $method.Name}}(ctx {{- range $index,$filed := $method.Params -}}
                                                           , {{$filed.Name}}
                                                     {{- end -}})

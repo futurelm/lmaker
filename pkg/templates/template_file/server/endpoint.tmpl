@@ -3,6 +3,8 @@ package server
 
 import (
     "context"
+    "fmt"
+
     "{{$basePackage}}/dto"
 )
 	/*
@@ -13,7 +15,7 @@ import (
 // {{ $method.Name}}...
 func  {{ loweCase $method.Name}}(ctx context.Context{{- range $index,$filed := $method.Params -}}
             , {{$filed.Name}} {{$filed.Type}}
-      {{- end -}}) ( {{- range $index,$filed := $method.Results -}}{{$filed.Name}} {{$filed.Type}},
+      {{- end -}}) ( {{- range $index,$filed := $method.Results -}} {{$filed.Type}},
                        {{- end }} err error) {
        return nil,nil
 }
@@ -21,11 +23,24 @@ func  {{ loweCase $method.Name}}(ctx context.Context{{- range $index,$filed := $
      {{- end }}
 	*/
 
+var ts =  []*dto.Todo{}
+
 // ListTodos...
-func  listtodos(ctx context.Context) (todos []*dto.Todo, err error) {
-       return []*dto.Todo{ {Author:"kobe"},{Author:"james"}},nil
+func  listtodos(ctx context.Context) ([]*dto.Todo, error) {
+       return ts,nil
 }
+
 // GetTodo...
-func  gettodo(ctx context.Context, int int64) (todo *dto.Todo, err error) {
-       return &dto.Todo{Id:int,Done:true},nil
+func  gettodo(ctx context.Context, int int64) (*dto.Todo, error) {
+        for _,t := range ts {
+            if t.Id == int {
+                return t,nil
+            }
+        }
+       return nil, fmt.Errorf("404")
+}
+
+func addtodo(ctx context.Context, todo *dto.Todo) (*dto.Todo, error) {
+    ts = append(ts,todo)
+    return todo,nil
 }
