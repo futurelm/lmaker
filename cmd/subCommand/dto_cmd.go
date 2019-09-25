@@ -48,7 +48,7 @@ func (dc *DtoCommand) Run() error {
 
 	//解析proto
 	//todo includePath variable
-	protoObj, err := pkg.ParseProto(files[0], []string{"/Users/liangliang.ma/gopath/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis"})
+	protoObj, err := pkg.ParseProto(files[0], pkg.IncludePath)
 	if err != nil {
 		log.RowMsg(err)
 		return err
