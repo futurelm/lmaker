@@ -17,6 +17,19 @@ go install
 
 // todolist 为项目名，切换到你的gopath下
 lmaker create -name=todolist   
+
+//测试
+cd todolist
+go build .   ==>生成二进制包 todolist
+./todolist   ==>运行 端口默认8088
+初始化共三个接口
+// add
+curl -X POST -H "Content-Type: application/json" -d '{"addTodoReq":{"id":2,"author":"lmaker3","description":"first+1 todo","done":true,"createdAt":"2019-10-11"}}' localhost:8088/addTodo  
+curl -X POST -H "Content-Type: application/json" -d '{"addTodoReq":{"id":2,"author":"lmaker3","description":"first+1 todo","done":true,"createdAt":"2019-10-11"}}' localhost:8088/addTodo
+// list
+curl -X GET -H "Content-Type: application/json" localhost:8088/listTodos 
+// get
+curl -X GET -H "Content-Type: application/json" localhost:8088/getTodo/2
 ```
 ## API扩展
 
