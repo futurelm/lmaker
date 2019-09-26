@@ -8,8 +8,12 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/go-openapi/inflect v0.19.0
 	github.com/golang/protobuf v1.3.2
+	github.com/gorilla/handlers v1.4.2
+	github.com/gorilla/mux v1.7.3
+	github.com/gorilla/schema v1.1.0
 	github.com/spf13/cobra v0.0.5
-	google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+	google.golang.org/genproto v0.0.0-20190925194540-b8fbc687dcfb
 	gopkg.in/AlecAivazis/survey.v1 v1.8.7
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
+
 )
