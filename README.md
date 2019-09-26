@@ -39,3 +39,8 @@ cd todolist
 lmaker gen 
 // 2. 完成server目录下完成接口实现 
 ```
+## 后续
+- grpc 自动生成
+- 配置文件
+- 中间件 trace,log等
+- gorm框架继承
