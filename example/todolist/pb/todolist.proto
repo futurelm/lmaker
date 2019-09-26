@@ -17,7 +17,7 @@ option idempotency_level = NO_SIDE_EFFECTS;
 
 rpc GetTodo(GetTodoReq) returns (GetTodoResp) {
 option (google.api.http) = {
-get: "/getTodo"
+get: "/getTodo/{int}"
 };
 option idempotency_level = NO_SIDE_EFFECTS;
 }

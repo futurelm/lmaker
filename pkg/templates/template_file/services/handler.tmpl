@@ -4,35 +4,36 @@
 package services
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	"github.com/lmfuture-ma/lmaker/transprot"
 	"net/http"
+	
+    "github.com/gorilla/mux"
+    transportHttp "github.com/lmfuture-ma/lmaker/transport/http"
 
 	"{{ $basePackage }}/dto"
 )
 
-type Handler struct {
+type handlers struct {
     {{- range $serviceIndex, $service := .File.Service }}
           {{- range $index, $method := $service.Method }}
-     {{ $method.Name}}  transprot.HttpHandler
+     {{ $method.Name}}  transportHttp.Handler
           {{- end }}
     {{- end }}
 }
 
-func MakeHandler(service {{ firstUpperCase $project}}Service,e *gin.Engine) *gin.Engine {
+func MakeHandler(service {{ firstUpperCase $project}}Service,e *mux.Router) *mux.Router {
 	handlers := registerHandler(service)
 	   {{- range $serviceIndex, $service := .File.Service }}
               {{- range $index, $method := $service.Method -}}
                 {{- range $routeIndex, $route := $method.HTTPRoutes }}
-    e.Handle({{ $route.HTTPMethod }},"{{ $route.Path }}",transprot.NewHttpServer(Decode{{$method.Name}}Req,handlers.{{ $method.Name}}).Server)
+    e.Handle("{{ $route.Path }}",transportHttp.NewHttpServer(Decode{{$method.Name}}Req,handlers.{{ $method.Name}})).Methods({{$route.HTTPMethod}})
                 {{- end }}
               {{- end -}}
         {{- end }}
 	return e
 }
 
-func registerHandler(s {{ firstUpperCase $project}}Service) Handler {
-	var handler Handler
+func registerHandler(s {{ firstUpperCase $project}}Service) handlers {
+	var handler handlers
 	   {{- range $serviceIndex, $service := .File.Service }}
               {{- range $index, $method := $service.Method }}
     handler.{{$method.Name}} = Make{{$method.Name}}Endpoint(s)
@@ -43,7 +44,7 @@ func registerHandler(s {{ firstUpperCase $project}}Service) Handler {
 
 {{- range $serviceIndex, $service := .File.Service -}}
      {{- range $index, $method := $service.Method }}
-func Make{{$method.Name}}Endpoint(s {{ firstUpperCase $project}}Service) transprot.HttpHandler{
+func Make{{$method.Name}}Endpoint(s {{ firstUpperCase $project}}Service) transportHttp.Handler{
 	return func(ctx context.Context, structReq interface{}) (interface{}, error ) {
         {{- if eq $method.InputType  "" }}
         {{ range $j,$result := $method.Results -}} {{$result.Name}}, {{- end }}err := s.{{$method.Name}}(ctx)
@@ -62,16 +63,27 @@ func Make{{$method.Name}}Endpoint(s {{ firstUpperCase $project}}Service) transpr
 	}
 }
 
-func Decode{{$method.Name}}Req(c *gin.Context) (interface{},error) {
+func Decode{{$method.Name}}Req(ctx context.Context, r *http.Request) (interface{},error) {
   {{- if eq $method.InputType  "" }}
      return nil, nil
-   {{ else }}
+   {{- else -}}
      req := new({{$method.InputType}})
-     if err:=c.Bind(req); err != nil {
-     	return nil, err
+     // Order will be: URL parameters < query params < form data < JSON body
+     // DEPRECATED: it is recommended to set 'http-parameter-priority: url' in grabkit.yaml
+     if err := transportHttp.DecodeMuxVars(r, req); err != nil {
+     	return req, err
+     }
+     if err := transportHttp.DecodePostForm(r, req); err != nil {
+     	return req, err
+     }
+
+     if !transportHttp.IsFormRequest(r) {
+     	if err := json.NewDecoder(r.Body).Decode(req); err != nil && err != io.EOF {
+     		return req, err
+     	}
      }
      return req, nil
-   {{ end }}
+   {{- end -}}
 }
       {{- end }}
 {{- end }}

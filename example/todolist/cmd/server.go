@@ -6,9 +6,11 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
-	"github.com/lmfuture-ma/lmaker/transprot"
 	"github.com/spf13/cobra"
+
+	transportHttp "github.com/lmfuture-ma/lmaker/transport/http"
 
 	"github.com/lmfuture-ma/lmaker/example/todolist/server"
 	"github.com/lmfuture-ma/lmaker/example/todolist/services"
@@ -46,12 +48,12 @@ type Shutdown func()
 
 //NewRouter：初始化路由
 func newRouter() (Start, Shutdown, error) {
-	e := transprot.NewGinServer()
+	e := transportHttp.NewMuxServer()
 	endpoint := server.NewServiceImpl()
 	services.MakeHandler(endpoint, e)
 
 	// 构建 http server,用来平滑关闭
-	svr := http.Server{Addr: "127.0.0.1:8088", Handler: e}
+	svr := http.Server{Addr: "127.0.0.1:8088", Handler: e, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second}
 	// 启动函数
 	start := func() {
 		go func() {

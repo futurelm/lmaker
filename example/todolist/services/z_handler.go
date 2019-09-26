@@ -2,35 +2,38 @@ package services
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	"github.com/lmfuture-ma/lmaker/transprot"
+	"encoding/json"
+	"io"
 	"net/http"
+
+	"github.com/gorilla/mux"
+	transportHttp "github.com/lmfuture-ma/lmaker/transport/http"
 
 	"github.com/lmfuture-ma/lmaker/example/todolist/dto"
 )
 
-type Handler struct {
-	ListTodos transprot.HttpHandler
-	GetTodo   transprot.HttpHandler
-	AddTodo   transprot.HttpHandler
+type handlers struct {
+	ListTodos transportHttp.Handler
+	GetTodo   transportHttp.Handler
+	AddTodo   transportHttp.Handler
 }
 
-func MakeHandler(service TodolistService, e *gin.Engine) *gin.Engine {
+func MakeHandler(service TodolistService, e *mux.Router) *mux.Router {
 	handlers := registerHandler(service)
-	e.Handle(http.MethodGet, "/listTodos", transprot.NewHttpServer(DecodeListTodosReq, handlers.ListTodos).Server)
-	e.Handle(http.MethodGet, "/getTodo", transprot.NewHttpServer(DecodeGetTodoReq, handlers.GetTodo).Server)
-	e.Handle(http.MethodPost, "/addTodo", transprot.NewHttpServer(DecodeAddTodoReq, handlers.AddTodo).Server)
+	e.Handle("/listTodos", transportHttp.NewHttpServer(DecodeListTodosReq, handlers.ListTodos)).Methods(http.MethodGet)
+	e.Handle("/getTodo/{int}", transportHttp.NewHttpServer(DecodeGetTodoReq, handlers.GetTodo)).Methods(http.MethodGet)
+	e.Handle("/addTodo", transportHttp.NewHttpServer(DecodeAddTodoReq, handlers.AddTodo)).Methods(http.MethodPost)
 	return e
 }
 
-func registerHandler(s TodolistService) Handler {
-	var handler Handler
+func registerHandler(s TodolistService) handlers {
+	var handler handlers
 	handler.ListTodos = MakeListTodosEndpoint(s)
 	handler.GetTodo = MakeGetTodoEndpoint(s)
 	handler.AddTodo = MakeAddTodoEndpoint(s)
 	return handler
 }
-func MakeListTodosEndpoint(s TodolistService) transprot.HttpHandler {
+func MakeListTodosEndpoint(s TodolistService) transportHttp.Handler {
 	return func(ctx context.Context, structReq interface{}) (interface{}, error) {
 		todos, err := s.ListTodos(ctx)
 		var rs *dto.ListTodosResponse
@@ -43,11 +46,10 @@ func MakeListTodosEndpoint(s TodolistService) transprot.HttpHandler {
 	}
 }
 
-func DecodeListTodosReq(c *gin.Context) (interface{}, error) {
+func DecodeListTodosReq(ctx context.Context, r *http.Request) (interface{}, error) {
 	return nil, nil
-
 }
-func MakeGetTodoEndpoint(s TodolistService) transprot.HttpHandler {
+func MakeGetTodoEndpoint(s TodolistService) transportHttp.Handler {
 	return func(ctx context.Context, structReq interface{}) (interface{}, error) {
 		req := structReq.(*dto.GetTodoReq)
 		todo, err := s.GetTodo(ctx, req.Int)
@@ -61,15 +63,25 @@ func MakeGetTodoEndpoint(s TodolistService) transprot.HttpHandler {
 	}
 }
 
-func DecodeGetTodoReq(c *gin.Context) (interface{}, error) {
+func DecodeGetTodoReq(ctx context.Context, r *http.Request) (interface{}, error) {
 	req := new(dto.GetTodoReq)
-	if err := c.Bind(req); err != nil {
-		return nil, err
+	// Order will be: URL parameters < query params < form data < JSON body
+	// DEPRECATED: it is recommended to set 'http-parameter-priority: url' in grabkit.yaml
+	if err := transportHttp.DecodeMuxVars(r, req); err != nil {
+		return req, err
+	}
+	if err := transportHttp.DecodePostForm(r, req); err != nil {
+		return req, err
+	}
+
+	if !transportHttp.IsFormRequest(r) {
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil && err != io.EOF {
+			return req, err
+		}
 	}
 	return req, nil
-
 }
-func MakeAddTodoEndpoint(s TodolistService) transprot.HttpHandler {
+func MakeAddTodoEndpoint(s TodolistService) transportHttp.Handler {
 	return func(ctx context.Context, structReq interface{}) (interface{}, error) {
 		req := structReq.(*dto.AddTodoReq)
 		addTodoResp, err := s.AddTodo(ctx, req.AddTodoReq)
@@ -83,11 +95,21 @@ func MakeAddTodoEndpoint(s TodolistService) transprot.HttpHandler {
 	}
 }
 
-func DecodeAddTodoReq(c *gin.Context) (interface{}, error) {
+func DecodeAddTodoReq(ctx context.Context, r *http.Request) (interface{}, error) {
 	req := new(dto.AddTodoReq)
-	if err := c.Bind(req); err != nil {
-		return nil, err
+	// Order will be: URL parameters < query params < form data < JSON body
+	// DEPRECATED: it is recommended to set 'http-parameter-priority: url' in grabkit.yaml
+	if err := transportHttp.DecodeMuxVars(r, req); err != nil {
+		return req, err
+	}
+	if err := transportHttp.DecodePostForm(r, req); err != nil {
+		return req, err
+	}
+
+	if !transportHttp.IsFormRequest(r) {
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil && err != io.EOF {
+			return req, err
+		}
 	}
 	return req, nil
-
 }
